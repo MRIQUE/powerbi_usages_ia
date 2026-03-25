@@ -1,6 +1,7 @@
 # Pipeline Fabric — Données d'utilisation IA
 
 **Organisation** : ADENES — DSI Groupe
+**Auteur** : Aymeric Lacroix
 **Date** : Mars 2026
 
 Pipeline d'ingestion automatisé des données d'utilisation de l'IA générative vers Microsoft Fabric, consolidant trois sources Microsoft dans un Lakehouse analytique unifié.
