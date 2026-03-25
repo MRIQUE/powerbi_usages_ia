@@ -1,4 +1,18 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(pytest tests/ -v)",
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(pytest tests/test_config.py -v)",
+      "Bash(pip install:*)",
+      "Bash(python -m pytest tests/test_config.py -v)",
+      "Bash(pytest tests/test_logger.py -v)",
+      "Bash(python -m pip install -q -r requirements-dev.txt)",
+      "Bash(python -m pytest tests/test_logger.py -v)",
+      "Bash(python -c \"import logging; logger = logging.getLogger\\(''deploy''\\); print\\(f''Initial handlers: {logger.handlers}''\\); print\\(f''Has handler: {bool\\(logger.handlers\\)}''\\)\")",
+      "Bash(python -m pytest tests/test_lro.py -v)"
+    ]
+  },
   "enabledPlugins": {
     "superpowers@superpowers-marketplace": true
   }
