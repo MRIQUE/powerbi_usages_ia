@@ -1,3 +1,127 @@
+# Fabric Pipeline — AI Usage Data
+
+**Organisation**: ADENES — Group IT Department
+**Author**: Aymeric Lacroix
+**Date**: March 2026
+
+Automated ingestion pipeline for generative AI usage data into Microsoft Fabric, consolidating three Microsoft sources into a unified analytical Lakehouse.
+
+---
+
+## Context
+
+This project feeds the ADENES AI CODIR dashboard by aggregating:
+
+| Source | API | Data |
+|--------|-----|------|
+| Microsoft Defender for Cloud Apps | Microsoft Graph Beta (`/security/dataDiscovery`) | Discovered AI applications, users, network volumes |
+| Microsoft Viva Insights | Copilot Dashboard | Copilot adoption metrics |
+| Microsoft Graph Reports API | `/v1.0/reports/` | Copilot usage per user |
+
+---
+
+## Repository Structure
+
+```
+powerbi_usages_ia/
+├── Specifications/
+│   └── NOTE_TECHNIQUE_PIPELINE_FABRIC_AI_ANALYTICS.md   # Full technical specification
+├── docs/superpowers/
+│   ├── specs/2026-03-25-fabric-ai-analytics-deploy-design.md
+│   └── plans/2026-03-25-fabric-ai-analytics-deployer.md
+└── fabric-ai-analytics-deploy/    # Automated deployment script
+    ├── deploy/                    # Python modules
+    ├── tests/                     # Unit tests
+    ├── .env.example               # Configuration template
+    ├── requirements.txt
+    └── README.md
+```
+
+---
+
+## Automated Deployment (`fabric-ai-analytics-deploy`)
+
+Python script that provisions the entire Fabric infrastructure in a single command:
+
+| Step | Resource |
+|------|----------|
+| 1 | Entra ID App Registration + Service Principal + Graph permissions |
+| 2 | Fabric Workspace `WS_AI_Analytics_ADENES` |
+| 3 | Lakehouse `lkh_ai_analytics` |
+| 4 | Ingestion Notebooks (Cloud Discovery + Copilot Usage) |
+| 5 | Data Pipeline `pip_daily_ai_ingestion` |
+| 6 | Daily schedule at 6:00 AM (Job Scheduler) |
+| 7 | On-demand execution + Delta table verification |
+
+### Prerequisites
+
+1. Python 3.10+
+2. Account with **Global Administrator** or **Privileged Role Administrator** rights for step 1 (Entra)
+3. Fabric admin setting enabled: *Service principals can use Fabric APIs* + *Service principals can create workspaces*
+4. An active Fabric F-SKU capacity
+
+### Installation
+
+```bash
+cd fabric-ai-analytics-deploy
+pip install -r requirements.txt
+cp .env.example .env
+# Fill in the variables in .env
+```
+
+### Configuration (`.env`)
+
+```env
+TENANT_ID=your-tenant-id
+CLIENT_ID=your-client-id
+CLIENT_SECRET=your-client-secret
+CAPACITY_ID=your-fabric-capacity-id
+KEY_VAULT_URL=https://kv-adenes.vault.azure.net/
+KV_SECRET_NAME_CLIENT_ID=fabric-pipeline-client-id
+KV_SECRET_NAME_CLIENT_SECRET=fabric-pipeline-client-secret
+# Required only for step 1 — obtain via:
+# az account get-access-token --resource https://graph.microsoft.com --query accessToken -o tsv
+ADMIN_TOKEN=
+```
+
+### Usage
+
+```bash
+# Full deployment (steps 1 to 7)
+python -m deploy
+
+# Resume from a specific step (if a previous step was already completed)
+python -m deploy --from-step 2
+
+# List available steps
+python -m deploy --list-steps
+```
+
+The state of each step is persisted in `deploy-output.json` to allow resuming after interruption.
+
+### Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/
+```
+
+---
+
+## Out of Scope (manual configuration)
+
+The **Viva Insights Dataflow Gen2** cannot be created programmatically via the Fabric REST API. Its configuration remains manual — see the technical specification for detailed steps.
+
+---
+
+## Documentation
+
+- [Full technical specification](Specifications/NOTE_TECHNIQUE_PIPELINE_FABRIC_AI_ANALYTICS.md)
+- [Deployer design spec](docs/superpowers/specs/2026-03-25-fabric-ai-analytics-deploy-design.md)
+
+---
+---
+
 # Pipeline Fabric — Données d'utilisation IA
 
 **Organisation** : ADENES — DSI Groupe
